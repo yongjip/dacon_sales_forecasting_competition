@@ -12,6 +12,8 @@ train = pd.read_csv('data/train.csv')
 test = pd.read_csv('data/test.csv')
 submission = pd.read_csv('data/submission.csv')
 
+# Best: 1.465
+pct = 1.465 #v1-3
 
 df = test.copy()
 df.date = pd.to_datetime(df.date, format='%Y-%m-%d')
@@ -29,9 +31,7 @@ for store_i in store_list[:]:
     test_df = test_df.resample('D').sum()
     test_df.holyday = test_df.holyday.map(lambda x: x if x <= 1 else 1)
     test_df = test_df.resample('M').sum()
-    predic_len = 14
-
-    prediction_i = sum(test_df.amount) / len(test_df.amount) * 0.55
+    prediction_i = sum(test_df.amount) / len(test_df.amount) * pct
     submission.loc[submission['store_id'] == store_i, 'total_sales'] = prediction_i
 
-submission.to_csv('outputs/submission_v1-2.csv', index=False)
+submission.to_csv('outputs/submission_{}.csv'.format(pct), index=False)
