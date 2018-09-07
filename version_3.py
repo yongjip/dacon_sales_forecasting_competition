@@ -172,13 +172,44 @@ def get_optimal_params(y):
     return optimal_params
 
 
-submission_copy = submission.copy()
+
+
+# Best Param (28-14-7 model)
+# 49.82221
+# sampling_p = 28
+# mean_period = 2 * 3 #14 * 2*3
+#
+# predic_len = math.floor(100 / sampling_p)
+#
+# expected_return_pct_lending = 0.13 * (100 + 16 + 6) / 365
+# expected_loss_pct_lending = 1.00
+# min_period = 6
+
+# expected_return_pct_lending = 0.13 * (100 + 16 + 6) / 365 == 49.82221
+# expected_return_pct_lending = 0.13 * (100 + 16 + 5) / 365 == 49.86618
+# expected_return_pct_lending = 0.13 * (100 + 16 + 7) / 365 == 54.61
+# expected_return_pct_lending = 0.13 * (100 + 16 + 8) / 365 == 54.6889
+
+
+
+# 49.83673 (28-21-14-7 model)
+# sampling_p = 28
+# mean_period = 2 * 3 #14 * 2*3
+#
+# predic_len = math.floor(100 / sampling_p)
+#
+# expected_return_pct_lending = 0.13 * (100 + 16 + 6) / 365
+# expected_loss_pct_lending = 1.00
+# min_period = 6
+
+
+
 sampling_p = 28
 mean_period = 2 * 3 #14 * 2*3
 
 predic_len = math.floor(100 / sampling_p)
 
-expected_return_pct_lending = 0.13 * (100 + 16 + 6) / 365
+expected_return_pct_lending = 0.13 * (100 + 16 + 5) / 365
 expected_loss_pct_lending = 1.00
 min_period = 6
 
@@ -200,6 +231,8 @@ output_file_name = output_file_name_fmt.format(optimal_p=round(optimal_prob, 3),
                                                mean_period=mean_period,
                                                min_period=min_period,
                                                max_pdq=max_pdq)
+
+submission_copy = submission.copy()
 
 
 def arima_main(input_df, sampling_period_days, fcst_period):
@@ -231,8 +264,8 @@ for store_i in store_list[:]:
     test_df = test_groupby_date_store[test_groupby_date_store.store_id == store_i]
     test_df_daily = test_df.resample('D').sum()
     prediction_i = arima_main(test_df_daily, sampling_period_days=28, fcst_period=3)
-    if prediction_i is None:
-        prediction_i = arima_main(test_df_daily, sampling_period_days=21, fcst_period=4)
+    # if prediction_i is None:
+    #     prediction_i = arima_main(test_df_daily, sampling_period_days=21, fcst_period=4)
     if prediction_i is None:
         prediction_i = arima_main(test_df_daily, sampling_period_days=14, fcst_period=6)
 
