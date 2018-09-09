@@ -175,7 +175,7 @@ def get_optimal_params(y):
 
 
 # Best Param (28-14-7 model)
-# 49.82221
+# 49.80907
 # sampling_p = 28
 # mean_period = 2 * 3 #14 * 2*3
 #
@@ -185,6 +185,8 @@ def get_optimal_params(y):
 # expected_loss_pct_lending = 1.00
 # min_period = 6
 
+# expected_return_pct_lending = 0.13 * (100 + 16 + 6.3) / 365 == 49.80907
+# expected_return_pct_lending = 0.13 * (100 + 16 + 6.2) / 365 == 49.81345
 # expected_return_pct_lending = 0.13 * (100 + 16 + 6) / 365 == 49.82221
 # expected_return_pct_lending = 0.13 * (100 + 16 + 5) / 365 == 49.86618
 # expected_return_pct_lending = 0.13 * (100 + 16 + 7) / 365 == 54.61
@@ -209,7 +211,7 @@ mean_period = 2 * 3 #14 * 2*3
 
 predic_len = math.floor(100 / sampling_p)
 
-expected_return_pct_lending = 0.13 * (100 + 16 + 5) / 365
+expected_return_pct_lending = 0.13 * (100 + 16 + 6.3) / 365
 expected_loss_pct_lending = 1.00
 min_period = 6
 
@@ -284,3 +286,5 @@ for store_i in store_list[:]:
     submission_copy.loc[submission_copy['store_id'] == store_i, 'total_sales'] = prediction_i
 
 submission_copy.to_csv(output_file_name, index=False)
+
+print(output_file_name)
