@@ -67,6 +67,7 @@ for nega_i in df_neg.to_records()[:]:
 df_pos = df_pos[df_pos.amount > 0]
 
 
+
 def adf_test(y):
     # perform Augmented Dickey Fuller test
     print('Results of Augmented Dickey-Fuller test:')
@@ -85,8 +86,8 @@ def ts_diagnostics(y, lags=None, title='', filename=''):
         y = pd.Series(y)
 
     # weekly moving averages (5 day window because of workdays)
-    rolling_mean = pd.Series.rolling(y, window=12).mean()
-    rolling_std = pd.Series.rolling(y, window=12).std()
+    rolling_mean = pd.Series.rolling(y, window=2).mean()
+    rolling_std = pd.Series.rolling(y, window=2).std()
 
     fig = plt.figure(figsize=(14, 12))
     layout = (3, 2)
@@ -150,7 +151,7 @@ for store_i in store_list[:200]:
 
 
 def get_optimal_params(y):
-    # Define the p, d and q parameters to take any value between 0 and 2
+    # Define the p, d and q parameters to take any value between 0 and 1
 
     param_dict = {}
     for param in pdq:
@@ -172,7 +173,14 @@ def get_optimal_params(y):
     return optimal_params
 
 
+# Seperate Prams (28-14-7 model)
+# 49.53924
+# 28: expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365 &
+# 14: expected_return_pct_lending = 0.13 * (100 + 2) / 365 == 49.78721 + FCST for 7 period
 
+# 49.78685
+# 28: expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365 &
+# 14: expected_return_pct_lending = 0.13 * (100 + 16 + 6.9) / 365 == 49.78721
 
 # Best Param (28-14-7 model)
 # 49.80907
@@ -185,12 +193,20 @@ def get_optimal_params(y):
 # expected_loss_pct_lending = 1.00
 # min_period = 6
 
+# expected_return_pct_lending = 0.13 * (100 + 16 + 8) / 365 == 54.6889
+# expected_return_pct_lending = 0.13 * (100 + 16 + 7) / 365 == 54.61
+
+# expected_return_pct_lending = 0.13 * (100 + 16 + 6.9) / 365 == 54.60209
+# expected_return_pct_lending = 0.13 * (100 + 16 + 6.85) / 365 == 54.59813
+
+# expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365 == 49.78721
+# expected_return_pct_lending = 0.13 * (100 + 16 + 6.6) / 365 == 49.79594
+# expected_return_pct_lending = 0.13 * (100 + 16 + 6.5) / 365 == 49.80032
 # expected_return_pct_lending = 0.13 * (100 + 16 + 6.3) / 365 == 49.80907
 # expected_return_pct_lending = 0.13 * (100 + 16 + 6.2) / 365 == 49.81345
 # expected_return_pct_lending = 0.13 * (100 + 16 + 6) / 365 == 49.82221
 # expected_return_pct_lending = 0.13 * (100 + 16 + 5) / 365 == 49.86618
-# expected_return_pct_lending = 0.13 * (100 + 16 + 7) / 365 == 54.61
-# expected_return_pct_lending = 0.13 * (100 + 16 + 8) / 365 == 54.6889
+
 
 
 
@@ -199,11 +215,11 @@ def get_optimal_params(y):
 # mean_period = 2 * 3 #14 * 2*3
 #
 # predic_len = math.floor(100 / sampling_p)
-#
-# expected_return_pct_lending = 0.13 * (100 + 16 + 6) / 365
+# expected_return_pct_lending = 0.13 * (100 + 16 + 7) / 365 == 54.62457
+#expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365 == 49.80176
+# expected_return_pct_lending = 0.13 * (100 + 16 + 6) / 365 == 49.83673
 # expected_loss_pct_lending = 1.00
 # min_period = 6
-
 
 
 sampling_p = 28
@@ -211,13 +227,14 @@ mean_period = 2 * 3 #14 * 2*3
 
 predic_len = math.floor(100 / sampling_p)
 
-expected_return_pct_lending = 0.13 * (100 + 16 + 6.3) / 365
+expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365
 expected_loss_pct_lending = 1.00
+optimal_prob = expected_loss_pct_lending / (expected_loss_pct_lending + expected_return_pct_lending)
+optimal_z_score = st.norm.ppf(optimal_prob)
+
 min_period = 6
 
 
-optimal_prob = expected_loss_pct_lending / (expected_loss_pct_lending + expected_return_pct_lending)
-optimal_z_score = st.norm.ppf(optimal_prob)
 
 max_pdq = 2
 p = d = q = range(0, max_pdq)
@@ -227,8 +244,8 @@ pdq = list(itertools.product(p, d, q))
 pdqs = dict()
 print(optimal_prob)
 print(optimal_z_score)
-output_file_name_fmt = 'outputs/py_4arima_pos_{optimal_p}-{sampling_period}_no_sales_prob&no mean{mean_period}&min_period {min_period}_pdq{max_pdq}.csv'
-output_file_name = output_file_name_fmt.format(optimal_p=round(optimal_prob, 3),
+output_file_name_fmt = 'outputs/py_4arima_pos_sep_{optimal_p}-{sampling_period}_no_sales_prob&no mean{mean_period}&min_period {min_period}_pdq{max_pdq}.csv'
+output_file_name = output_file_name_fmt.format(optimal_p=round(optimal_prob, 4),
                                                sampling_period=sampling_p,
                                                mean_period=mean_period,
                                                min_period=min_period,
@@ -245,6 +262,16 @@ def arima_main(input_df, sampling_period_days, fcst_period):
 
     if len(ts_log) < min_period:
         return None
+    if sampling_period_days >= 28:
+        expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365
+    elif sampling_period_days >= 14:
+        expected_return_pct_lending = 0.13 * (100 + 2) / 365
+    else:
+        expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365
+
+    expected_loss_pct_lending = 1.00
+    optimal_prob = expected_loss_pct_lending / (expected_loss_pct_lending + expected_return_pct_lending)
+    optimal_z_score = st.norm.ppf(optimal_prob)
 
     optimal_params = get_optimal_params(ts_log)
     pdqs[store_i] = optimal_params
@@ -269,7 +296,7 @@ for store_i in store_list[:]:
     # if prediction_i is None:
     #     prediction_i = arima_main(test_df_daily, sampling_period_days=21, fcst_period=4)
     if prediction_i is None:
-        prediction_i = arima_main(test_df_daily, sampling_period_days=14, fcst_period=6)
+        prediction_i = arima_main(test_df_daily, sampling_period_days=14, fcst_period=7)
 
     if prediction_i is None:
         prediction_i = arima_main(test_df_daily, sampling_period_days=7, fcst_period=12)
