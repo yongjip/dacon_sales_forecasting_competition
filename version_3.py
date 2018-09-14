@@ -129,7 +129,6 @@ def ts_diagnostics(y, lags=None, title='', filename=''):
     return
 
 
-test.head()
 df = df_pos.copy()
 test_groupby_date_store = df.groupby(['date', 'store_id'])['amount', 'holyday'].sum()
 test_groupby_date_store = test_groupby_date_store.reset_index()
@@ -174,6 +173,36 @@ def get_optimal_params(y):
 
 
 # Seperate Prams (28-14-7 model)
+# 49.42492
+#     expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365
+#     expected_return_pct_lending = 0.13 * (100 + 16 + 12) / 365
+
+
+# 49.44151
+#     expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365
+#     expected_return_pct_lending = 0.13 * (100 + 16 + 8) / 365
+
+# 49.44993
+#     expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365
+#     expected_return_pct_lending = 0.13 * (100 + 16 + 6) / 365
+
+# 49.47571
+#     expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365
+#     expected_return_pct_lending = 0.13 * (100 + 16) / 365
+
+
+# 49.50232
+#     expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365
+#     expected_return_pct_lending = 0.13 * (100 + 10) / 365
+
+# 49.52056
+# expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365
+# expected_return_pct_lending = 0.13 * (100 + 6) / 365
+
+#49.53453
+# 28: expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365 &
+# 14: expected_return_pct_lending = 0.13 * (100 + 3) / 365 == 49.78721 + FCST for 7 period
+
 # 49.53924
 # 28: expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365 &
 # 14: expected_return_pct_lending = 0.13 * (100 + 2) / 365 == 49.78721 + FCST for 7 period
@@ -265,7 +294,7 @@ def arima_main(input_df, sampling_period_days, fcst_period):
     if sampling_period_days >= 28:
         expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365
     elif sampling_period_days >= 14:
-        expected_return_pct_lending = 0.13 * (100 + 2) / 365
+        expected_return_pct_lending = 0.13 * (100 + 16 + 14) / 365
     else:
         expected_return_pct_lending = 0.13 * (100 + 16 + 6.8) / 365
 
