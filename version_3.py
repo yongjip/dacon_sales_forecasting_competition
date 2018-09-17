@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
 from statsmodels.tsa.arima_model import ARIMA
 from statsmodels.tsa.stattools import adfuller, kpss
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
@@ -10,19 +9,13 @@ import warnings
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
 import itertools
-# from IPython.display import display, HTML
-from collections import defaultdict
 import scipy.stats as st
 warnings.filterwarnings("ignore")  # specify to ignore warning messages
 
-
 sns.set(color_codes=True)
-# %matplotlib inline
 
-# train = pd.read_csv('data/train.csv')
 test = pd.read_csv('data/test.csv')
 submission = pd.read_csv('data/submission.csv')
-
 
 
 df_copy = test.copy()
@@ -38,6 +31,9 @@ df_neg = df_copy[df_copy.amount < 0]
 exact_match = []
 larger_match = []
 no_match = []
+
+
+# Remove negative values from the data set.
 
 for nega_i in df_neg.to_records()[:]:
     store_i = nega_i[1]
@@ -65,7 +61,6 @@ for nega_i in df_neg.to_records()[:]:
 
 
 df_pos = df_pos[df_pos.amount > 0]
-
 
 
 def adf_test(y):
@@ -99,10 +94,10 @@ def ts_diagnostics(y, lags=None, title='', filename=''):
 
     # time series plot
     y.plot(ax=ts_ax)
-    rolling_mean.plot(ax=ts_ax, color='crimson');
-    rolling_std.plot(ax=ts_ax, color='darkslateblue');
+    rolling_mean.plot(ax=ts_ax, color='crimson')
+    rolling_std.plot(ax=ts_ax, color='darkslateblue')
     plt.legend(loc='best')
-    ts_ax.set_title(title, fontsize=24);
+    ts_ax.set_title(title, fontsize=24)
 
     # acf and pacf
     plot_acf(y, lags=lags, ax=acf_ax, alpha=0.5)
@@ -113,10 +108,9 @@ def ts_diagnostics(y, lags=None, title='', filename=''):
     qq_ax.set_title('QQ Plot')
 
     # hist plot
-    y.plot(ax=hist_ax, kind='hist', bins=25);
-    hist_ax.set_title('Histogram');
-    plt.tight_layout();
-    #     plt.savefig('./img/{}.png'.format(filename))
+    y.plot(ax=hist_ax, kind='hist', bins=25)
+    hist_ax.set_title('Histogram')
+    plt.tight_layout()
     plt.show()
 
     # perform Augmented Dickey Fuller test
@@ -168,7 +162,6 @@ def get_optimal_params(y):
 
     min_aic = min(param_dict.keys())
     optimal_params = param_dict[min_aic]
-    #     print("ARIMA{} - AIC: {}".format(optimal_params, min_aic))
     return optimal_params
 
 
@@ -235,8 +228,6 @@ def get_optimal_params(y):
 # expected_return_pct_lending = 0.13 * (100 + 16 + 6.2) / 365 == 49.81345
 # expected_return_pct_lending = 0.13 * (100 + 16 + 6) / 365 == 49.82221
 # expected_return_pct_lending = 0.13 * (100 + 16 + 5) / 365 == 49.86618
-
-
 
 
 # 49.83673 (28-21-14-7 model)
