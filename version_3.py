@@ -10,6 +10,7 @@ import statsmodels.api as sm
 import matplotlib.pyplot as plt
 import itertools
 import scipy.stats as st
+from datetime import datetime, timedelta
 warnings.filterwarnings("ignore")  # specify to ignore warning messages
 
 sns.set(color_codes=True)
@@ -25,42 +26,46 @@ df_copy.date = pd.to_datetime(df_copy.date)
 
 df_copy.date = pd.to_datetime(df_copy.date.astype(str) + " " + df_copy.time, format='%Y-%m-%d %H:%M:%S')
 
-df_pos = df_copy[df_copy.amount > 0]
-df_neg = df_copy[df_copy.amount < 0]
-
-exact_match = []
-larger_match = []
-no_match = []
-
-
 # Remove negative values from the data set.
 
-for nega_i in df_neg.to_records()[:]:
-    store_i = nega_i[1]
-    date_i = nega_i[2]
-    card_i = nega_i[4]
-    amt_i = nega_i[5]
-    cond_1 = (df_pos.store_id == store_i)
-    cond_2 = (df_pos.card_id == card_i)
-    cond_3 = (df_pos.amount >= abs(amt_i))
-    cond_4 = (df_pos.date <= date_i)
 
-    cond_i = cond_1 & cond_2 & cond_3 & cond_4
+def reduce_noise_by_removing_neg_vals(df_copy):
+    df_pos = df_copy[df_copy.amount > 0]
+    df_neg = df_copy[df_copy.amount < 0]
 
-    row_i = df_pos.loc[cond_i]
+    # exact_match = []
+    # larger_match = []
+    # no_match = []
 
-    if len(row_i[row_i.amount == abs(amt_i)]) > 0:
-        row_i = row_i[row_i.amount == abs(amt_i)]
-        matched_row = row_i[row_i.date == max(row_i.date)]
-        df_pos.loc[matched_row.index, 'amount'] = 0
-    elif len(row_i[row_i.amount > abs(amt_i)]) > 0:
-        matched_row = row_i[row_i.date == max(row_i.date)]
-        df_pos.loc[matched_row.index, 'amount'] = matched_row.amount + amt_i
-    else:
-        no_match.append(nega_i)
+    start = datetime.now()
 
+    for nega_i in df_neg.to_records()[:]:
+        store_i = nega_i[1]
+        date_i = nega_i[2]
+        card_i = nega_i[4]
+        amt_i = nega_i[5]
+        row_i = df_pos[df_pos.store_id == store_i]
+        row_i = row_i[row_i.card_id == card_i]
+        row_i = row_i[row_i.amount >= abs(amt_i)]
+        row_i = row_i[row_i.date <= date_i]
+        if len(row_i[row_i.amount == abs(amt_i)]) > 0:
+            row_i = row_i[row_i.amount == abs(amt_i)]
+            matched_row = row_i[row_i.date == max(row_i.date)]
+            # df_pos.loc[matched_row.index, 'amount'] = 0
+            df_pos = df_pos.loc[~df_pos.index.isin(matched_row.index), :]
+        elif len(row_i[row_i.amount > abs(amt_i)]) > 0:
+            matched_row = row_i[row_i.date == max(row_i.date)]
+            df_pos.loc[matched_row.index, 'amount'] = matched_row.amount + amt_i
+        # else:
+        #     pass
+            # no_match.append(nega_i)
+    end = datetime.now()
+    time_took = (end - start).seconds / 60
 
-df_pos = df_pos[df_pos.amount > 0]
+    print(round(time_took, 2))
+    return df_pos
+
+df_pos = reduce_noise_by_removing_neg_vals(df_copy)
 
 
 def adf_test(y):
@@ -130,17 +135,7 @@ test_groupby_date_store = test_groupby_date_store.reset_index()
 test_groupby_date_store = test_groupby_date_store.set_index('date')
 store_list = test_groupby_date_store.store_id.unique()
 
-
 store_list.sort()
-
-for store_i in store_list[:200]:
-    test_df = test_groupby_date_store[test_groupby_date_store.store_id == store_i]
-    test_df = test_df.resample('D').sum()
-    test_df = test_df[len(test_df) % 28:].resample('28D').sum()
-    ts_log = np.log(test_df.amount)
-    ts_log = ts_log[~ts_log.isin([np.nan, np.inf, -np.inf])]
-    if len(ts_log) < 4:
-        print(len(ts_log))
 
 
 def get_optimal_params(y):
@@ -255,7 +250,6 @@ optimal_z_score = st.norm.ppf(optimal_prob)
 min_period = 6
 
 
-
 max_pdq = 2
 p = d = q = range(0, max_pdq)
 pdq = list(itertools.product(p, d, q))
@@ -317,7 +311,6 @@ for store_i in store_list[:]:
     #     prediction_i = arima_main(test_df_daily, sampling_period_days=21, fcst_period=4)
     if prediction_i is None:
         prediction_i = arima_main(test_df_daily, sampling_period_days=14, fcst_period=7)
-
     if prediction_i is None:
         prediction_i = arima_main(test_df_daily, sampling_period_days=7, fcst_period=12)
     if prediction_i is None:
